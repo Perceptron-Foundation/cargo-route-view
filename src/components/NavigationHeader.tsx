@@ -35,6 +35,12 @@ const NavigationHeader = () => {
           >
             Traffic Dashboard
           </Button>
+          <Button
+            variant={location.pathname === "/predictive-logistics" ? "default" : "outline"}
+            onClick={() => navigate("/predictive-logistics")}
+          >
+            Predictive Logistics
+          </Button>
         </div>
       </div>
     </div>
