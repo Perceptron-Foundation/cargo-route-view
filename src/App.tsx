@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Inventory from "./pages/Inventory";
 import DemandHeatmap from "./pages/DemandHeatmap";
 import TrafficAwareSmartDashboard from "./components/TrafficAwareSmartDashboard";
+import PredictiveLogistics from "./pages/PredictiveLogistics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/demand-heatmap" element={<DemandHeatmap />} />
           <Route path="/traffic-dashboard" element={<TrafficAwareSmartDashboard />} />
+          <Route path="/predictive-logistics" element={<PredictiveLogistics />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
