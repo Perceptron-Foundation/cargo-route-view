@@ -29,6 +29,12 @@ const NavigationHeader = () => {
           >
             Demand Heatmap
           </Button>
+          <Button
+            variant={location.pathname === "/traffic-dashboard" ? "default" : "outline"}
+            onClick={() => navigate("/traffic-dashboard")}
+          >
+            Traffic Dashboard
+          </Button>
         </div>
       </div>
     </div>
