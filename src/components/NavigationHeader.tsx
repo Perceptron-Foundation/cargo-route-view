@@ -23,6 +23,12 @@ const NavigationHeader = () => {
           >
             Inventory Monitoring
           </Button>
+          <Button
+            variant={location.pathname === "/demand-heatmap" ? "default" : "outline"}
+            onClick={() => navigate("/demand-heatmap")}
+          >
+            Demand Heatmap
+          </Button>
         </div>
       </div>
     </div>
