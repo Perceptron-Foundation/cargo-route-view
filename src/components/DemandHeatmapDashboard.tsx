@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ const DemandHeatmapDashboard = () => {
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showPerishableOverlay, setShowPerishableOverlay] = useState(true);
   const [showStockoutPins, setShowStockoutPins] = useState(true);
-  const [timeSlider, setTimeSlider] = useState(0);
+  const [timeSlider, setTimeSlider] = useState([0]);
 
   // Mock data
   const storesData: StoreData[] = [
@@ -108,7 +107,7 @@ const DemandHeatmapDashboard = () => {
 
   const filteredStores = useMemo(() => {
     return storesData.filter(store => store.current_demand_score >= demandThreshold[0]);
-  }, [demandThreshold]);
+  }, [demandThreshold, storesData]);
 
   const getDemandColor = (score: number) => {
     if (score >= 80) return "bg-red-500";
@@ -127,6 +126,16 @@ const DemandHeatmapDashboard = () => {
   const getShelfLifePercentage = (hours: number) => {
     const maxHours = 48; // Assuming 48 hours as max shelf life
     return Math.max(0, (hours / maxHours) * 100);
+  };
+
+  // Deterministic marker placement for demo (not production!)
+  const getMarkerPosition = (store: StoreData) => {
+    // Only for mock/demo: Use store_id numbers to generate positions
+    const num = parseInt(store.store_id.replace(/\D/g, "")) || 1;
+    return {
+      left: `${20 + (num * 13) % 60}%`,
+      top: `${20 + (num * 23) % 60}%`
+    };
   };
 
   return (
@@ -196,11 +205,11 @@ const DemandHeatmapDashboard = () => {
                 {/* Time Travel Slider */}
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Historical View (Days Ago): {timeSlider}
+                    Historical View (Days Ago): {timeSlider[0]}
                   </label>
                   <Slider
-                    value={[timeSlider]}
-                    onValueChange={(value) => setTimeSlider(value[0])}
+                    value={timeSlider}
+                    onValueChange={setTimeSlider}
                     max={7}
                     min={0}
                     step={1}
@@ -222,7 +231,7 @@ const DemandHeatmapDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded"></div>
-                      <span>Low Demand (<60)</span>
+                      <span>Low Demand (&lt;60)</span>
                     </div>
                   </div>
                 </div>
@@ -245,27 +254,27 @@ const DemandHeatmapDashboard = () => {
                   </div>
 
                   {/* Store Markers */}
-                  {filteredStores.map((store) => (
-                    <div
-                      key={store.store_id}
-                      className={`absolute w-8 h-8 rounded-full ${getDemandColor(store.current_demand_score)} 
-                        cursor-pointer transform -translate-x-4 -translate-y-4 flex items-center justify-center
-                        hover:scale-110 transition-transform shadow-lg border-2 border-white`}
-                      style={{
-                        left: `${20 + Math.random() * 60}%`,
-                        top: `${20 + Math.random() * 60}%`
-                      }}
-                      onClick={() => setSelectedStore(store)}
-                      title={`${store.store_name} - Demand: ${store.current_demand_score}`}
-                    >
-                      <span className="text-white text-xs font-bold">{store.current_demand_score}</span>
-                      {store.has_stockout && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border border-white">
-                          <AlertTriangle className="w-2 h-2 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {filteredStores.map((store) => {
+                    const pos = getMarkerPosition(store);
+                    return (
+                      <div
+                        key={store.store_id}
+                        className={`absolute w-8 h-8 rounded-full ${getDemandColor(store.current_demand_score)} 
+                          cursor-pointer transform -translate-x-4 -translate-y-4 flex items-center justify-center
+                          hover:scale-110 transition-transform shadow-lg border-2 border-white`}
+                        style={pos}
+                        onClick={() => setSelectedStore(store)}
+                        title={`${store.store_name} - Demand: ${store.current_demand_score}`}
+                      >
+                        <span className="text-white text-xs font-bold">{store.current_demand_score}</span>
+                        {store.has_stockout && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border border-white">
+                            <AlertTriangle className="w-2 h-2 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {/* Heatmap Overlay */}
                   {showHeatmap && (
