@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import mapboxgl from "mapbox-gl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ const DemandHeatmapDashboard = () => {
   const [showPerishableOverlay, setShowPerishableOverlay] = useState(true);
   const [showStockoutPins, setShowStockoutPins] = useState(true);
   const [timeSlider, setTimeSlider] = useState([0]);
+  const mapContainer = useRef<HTMLDivElement>(null);
 
   // Mock data
   const storesData: StoreData[] = [
@@ -137,6 +139,17 @@ const DemandHeatmapDashboard = () => {
       top: `${20 + (num * 23) % 60}%`
     };
   };
+
+  useEffect(() => {
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    const map = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [77.5946, 12.9716], // [lng, lat] - Bangalore as example
+      zoom: 11,
+    });
+    return () => map.remove();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
@@ -243,45 +256,8 @@ const DemandHeatmapDashboard = () => {
           <div className={`${showPerishablePanel ? "lg:col-span-2" : "lg:col-span-3"} transition-all duration-300`}>
             <Card className="h-[600px]">
               <CardContent className="p-0 h-full relative">
-                {/* Map Placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-gray-400 mb-4">🗺️</div>
-                      <p className="text-gray-600 font-medium">Interactive Demand Heatmap</p>
-                      <p className="text-gray-500 text-sm">Map integration ready for Mapbox/Google Maps</p>
-                    </div>
-                  </div>
-
-                  {/* Store Markers */}
-                  {filteredStores.map((store) => {
-                    const pos = getMarkerPosition(store);
-                    return (
-                      <div
-                        key={store.store_id}
-                        className={`absolute w-8 h-8 rounded-full ${getDemandColor(store.current_demand_score)} 
-                          cursor-pointer transform -translate-x-4 -translate-y-4 flex items-center justify-center
-                          hover:scale-110 transition-transform shadow-lg border-2 border-white`}
-                        style={pos}
-                        onClick={() => setSelectedStore(store)}
-                        title={`${store.store_name} - Demand: ${store.current_demand_score}`}
-                      >
-                        <span className="text-white text-xs font-bold">{store.current_demand_score}</span>
-                        {store.has_stockout && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border border-white">
-                            <AlertTriangle className="w-2 h-2 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* Heatmap Overlay */}
-                  {showHeatmap && (
-                    <div className="absolute inset-0 bg-gradient-radial from-red-300/30 via-yellow-300/20 to-transparent"></div>
-                  )}
-                </div>
-
+                {/* Mapbox Map Container */}
+                <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: "12px" }} />
                 {/* Store Details Popup */}
                 {selectedStore && (
                   <div className="absolute top-4 left-4 bg-white rounded-lg shadow-xl p-4 max-w-xs z-10 border">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import mapboxgl from "mapbox-gl";
 
 interface Stop {
   store_id: string;
@@ -38,7 +39,7 @@ const RouteOptimizationDashboard = () => {
   const [trafficFilter, setTrafficFilter] = useState<string>('all');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
 
   // Mock data - in real implementation, this would come from props or API
   const mockData: RouteData = {
@@ -129,6 +130,17 @@ const RouteOptimizationDashboard = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  useEffect(() => {
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    const map = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [77.5946, 12.9716], // [lng, lat] - Bangalore as example
+      zoom: 11,
+    });
+    return () => map.remove();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -216,22 +228,10 @@ const RouteOptimizationDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 h-[calc(100%-80px)]">
-                <div 
-                  ref={mapRef}
-                  className="w-full h-full bg-gradient-to-br from-blue-100 to-green-100 rounded-b-lg relative overflow-hidden"
-                >
-                  {/* Map Placeholder - In real implementation, integrate with Mapbox/Google Maps */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="h-16 w-16 text-blue-400 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg font-medium">Interactive Map</p>
-                      <p className="text-gray-500 text-sm mt-2">
-                        Real-time route visualization with traffic overlays
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Mock route indicators */}
+                <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                  {/* Mapbox Map Container */}
+                  <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: "12px" }} />
+                  {/* Map Controls Overlay */}
                   <div className="absolute top-4 left-4 space-y-2">
                     <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -246,6 +246,7 @@ const RouteOptimizationDashboard = () => {
                       <span className="text-sm font-medium">Normal Priority Routes</span>
                     </div>
                   </div>
+                  {/* Mock route indicators (keep for now, but will not show on real map until implemented) */}
                 </div>
               </CardContent>
             </Card>

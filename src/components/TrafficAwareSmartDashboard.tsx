@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import NavigationHeader from './NavigationHeader';
+import mapboxgl from "mapbox-gl";
 
 interface Vehicle {
   truck_id: string;
@@ -83,7 +84,18 @@ const TrafficAwareSmartDashboard = () => {
   const [congestionFilter, setCongestionFilter] = useState('all');
   const [zoneFilter, setZoneFilter] = useState('all');
   const [deliveryTypeFilter, setDeliveryTypeFilter] = useState('all');
-  const [mapRef] = useState(useRef<HTMLDivElement>(null));
+  const [mapContainer]= useState(useRef<HTMLDivElement>(null));
+
+  useEffect(() => {
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    const map = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: [77.5946, 12.9716],
+      zoom: 11,
+    });
+    return () => map.remove();
+  }, []);
 
   // Mock data based on the sample payload
   const mockData: TrafficData = {
@@ -318,64 +330,49 @@ const TrafficAwareSmartDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-0 h-[calc(100%-80px)]">
-                <div 
-                  ref={mapRef}
-                  className="w-full h-full bg-gradient-to-br from-blue-100 to-green-100 rounded-b-lg relative overflow-hidden"
-                >
-                  {/* Map Placeholder - In real implementation, integrate with Mapbox/Google Maps */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Navigation className="h-16 w-16 text-blue-400 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg font-medium">Interactive Traffic Map</p>
-                      <p className="text-gray-500 text-sm mt-2">
-                        Real-time vehicle tracking with traffic overlays
-                      </p>
-                    </div>
+                {/* Mapbox Map Container */}
+                <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: "12px" }} />
+                {/* Map Controls Overlay */}
+                <div className="absolute top-4 left-4 space-y-2">
+                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-sm font-medium">High Congestion</span>
                   </div>
-                  
-                  {/* Map Controls Overlay */}
-                  <div className="absolute top-4 left-4 space-y-2">
-                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <span className="text-sm font-medium">High Congestion</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                      <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                      <span className="text-sm font-medium">Medium Congestion</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="text-sm font-medium">Low Congestion</span>
-                    </div>
+                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span className="text-sm font-medium">Medium Congestion</span>
                   </div>
-
-                  {/* Vehicle Indicators */}
-                  {filteredVehicles.map((vehicle) => (
-                    <div
-                      key={vehicle.truck_id}
-                      className={`absolute cursor-pointer transition-all duration-200 hover:scale-110 ${
-                        selectedVehicle === vehicle.truck_id ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                      style={{
-                        left: `${((vehicle.lng - 77.6) * 1000) % 80}%`,
-                        top: `${((vehicle.lat - 12.9) * 1000) % 80}%`
-                      }}
-                      onClick={() => setSelectedVehicle(vehicle.truck_id)}
-                    >
-                      <div className="relative">
-                        <div className={`p-2 rounded-full shadow-lg ${
-                          vehicle.current_congestion_level === 'high' ? 'bg-red-500' :
-                          vehicle.current_congestion_level === 'medium' ? 'bg-amber-500' : 'bg-green-500'
-                        }`}>
-                          <Truck className="h-4 w-4 text-white" />
-                        </div>
-                        {vehicle.delayed_minutes > 10 && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm font-medium">Low Congestion</span>
+                  </div>
                 </div>
+                {/* Vehicle Indicators (keep for now, but will not show on real map until implemented) */}
+                {filteredVehicles.map((vehicle) => (
+                  <div
+                    key={vehicle.truck_id}
+                    className={`absolute cursor-pointer transition-all duration-200 hover:scale-110 ${
+                      selectedVehicle === vehicle.truck_id ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    style={{
+                      left: `${((vehicle.lng - 77.6) * 1000) % 80}%`,
+                      top: `${((vehicle.lat - 12.9) * 1000) % 80}%`
+                    }}
+                    onClick={() => setSelectedVehicle(vehicle.truck_id)}
+                  >
+                    <div className="relative">
+                      <div className={`p-2 rounded-full shadow-lg ${
+                        vehicle.current_congestion_level === 'high' ? 'bg-red-500' :
+                        vehicle.current_congestion_level === 'medium' ? 'bg-amber-500' : 'bg-green-500'
+                      }`}>
+                        <Truck className="h-4 w-4 text-white" />
+                      </div>
+                      {vehicle.delayed_minutes > 10 && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>
