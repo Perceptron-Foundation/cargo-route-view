@@ -145,7 +145,7 @@ const DemandHeatmapDashboard = () => {
     const map = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [77.5946, 12.9716], // [lng, lat] - Bangalore as example
+      center: [77.5946, 12.9716],
       zoom: 11,
     });
     return () => map.remove();
