@@ -330,49 +330,25 @@ const TrafficAwareSmartDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-0 h-[calc(100%-80px)]">
-                {/* Mapbox Map Container */}
-                <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: "12px" }} />
-                {/* Map Controls Overlay */}
-                <div className="absolute top-4 left-4 space-y-2">
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-sm font-medium">High Congestion</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-sm font-medium">Medium Congestion</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-sm font-medium">Low Congestion</span>
-                  </div>
-                </div>
-                {/* Vehicle Indicators (keep for now, but will not show on real map until implemented) */}
-                {filteredVehicles.map((vehicle) => (
-                  <div
-                    key={vehicle.truck_id}
-                    className={`absolute cursor-pointer transition-all duration-200 hover:scale-110 ${
-                      selectedVehicle === vehicle.truck_id ? 'ring-2 ring-blue-500' : ''
-                    }`}
-                    style={{
-                      left: `${((vehicle.lng - 77.6) * 1000) % 80}%`,
-                      top: `${((vehicle.lat - 12.9) * 1000) % 80}%`
-                    }}
-                    onClick={() => setSelectedVehicle(vehicle.truck_id)}
-                  >
-                    <div className="relative">
-                      <div className={`p-2 rounded-full shadow-lg ${
-                        vehicle.current_congestion_level === 'high' ? 'bg-red-500' :
-                        vehicle.current_congestion_level === 'medium' ? 'bg-amber-500' : 'bg-green-500'
-                      }`}>
-                        <Truck className="h-4 w-4 text-white" />
-                      </div>
-                      {vehicle.delayed_minutes > 10 && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                      )}
+                <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                  {/* Mapbox Map Container */}
+                  <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: "12px", position: "absolute", top: 0, left: 0, zIndex: 0 }} />
+                  {/* Map Controls Overlay (Legend) */}
+                  <div className="absolute top-4 left-4 space-y-2" style={{ zIndex: 2 }}>
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="text-sm font-medium">High Congestion</span>
                     </div>
-                  </div>
-                ))}
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                      <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                      <span className="text-sm font-medium">Medium Congestion</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="text-sm font-medium">Low Congestion</span>
+                    </div>
+                  </div>                  
+                </div>
               </CardContent>
             </Card>
           </div>
